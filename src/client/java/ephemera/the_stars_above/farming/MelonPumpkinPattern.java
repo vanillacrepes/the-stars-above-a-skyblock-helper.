@@ -20,6 +20,10 @@ public class MelonPumpkinPattern extends FarmingPattern {
     private long targetDelay = 0;
 
     @Override
+    public void syncConfig(int rowCount) {
+    }
+
+    @Override
     public void start() {
         state = State.FARMING;
         InputManager.INSTANCE.clear();
@@ -64,8 +68,8 @@ public class MelonPumpkinPattern extends FarmingPattern {
                     movingRight = !movingRight;
                     rowsCompleted++;
                     
-                    if (rowsCompleted >= ModConfig.INSTANCE.columnCount) {
-                        MacroManager.INSTANCE.startReturnToStart();
+                    if (rowsCompleted >= ModConfig.INSTANCE.rowCount) {
+                        MacroManager.INSTANCE.startReturnToStart("All rows completed (Melon/Pumpkin)");
                         return;
                     }
 

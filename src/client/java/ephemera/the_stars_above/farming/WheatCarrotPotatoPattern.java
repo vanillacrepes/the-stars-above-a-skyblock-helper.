@@ -10,17 +10,39 @@ import net.minecraft.util.math.Direction;
 
 public class WheatCarrotPotatoPattern extends FarmingPattern {
     private enum State {
-        LEFT, RIGHT, SWITCHING, ROW_DELAY
+        LEFT, RIGHT, ROW_DELAY
     }
 
     private State state = State.LEFT;
     private final TimerUtils delayTimer = new TimerUtils();
     private int rowsCompleted = 0;
     private long targetDelay = 0;
+    private double lastY = -1;
+
+    @Override
+    public void syncConfig(int rowCount) {
+    }
 
     @Override
     public void start() {
-        state = State.LEFT;
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.player != null) {
+            lastY = client.player.getY();
+            
+            // Startup Direction Sensing: Check perpendicular blocks
+            Direction facing = client.player.getHorizontalFacing();
+            Direction left = facing.rotateYCounterclockwise();
+            Direction right = facing.rotateYClockwise();
+            
+            if (isAir(client, left)) {
+                state = State.LEFT;
+            } else if (isAir(client, right)) {
+                state = State.RIGHT;
+            } else {
+                state = State.LEFT; // fallback
+            }
+        }
+        
         InputManager.INSTANCE.clear();
         InputManager.INSTANCE.attack(true);
         rowsCompleted = 0;
@@ -40,41 +62,13 @@ public class WheatCarrotPotatoPattern extends FarmingPattern {
             case LEFT:
                 InputManager.INSTANCE.left(true);
                 InputManager.INSTANCE.right(false);
-                if (isAtRowEnd(client)) {
-                    state = State.SWITCHING;
-                    delayTimer.reset();
-                }
+                checkRowSwitch(client);
                 break;
 
             case RIGHT:
                 InputManager.INSTANCE.right(true);
                 InputManager.INSTANCE.left(false);
-                if (isAtRowEnd(client)) {
-                    state = State.SWITCHING;
-                    delayTimer.reset();
-                }
-                break;
-
-            case SWITCHING:
-                // Move forward to next row
-                InputManager.INSTANCE.forward(true); 
-                InputManager.INSTANCE.left(false);
-                InputManager.INSTANCE.right(false);
-                
-                if (delayTimer.hasPassed(600)) { // Time to move to next row
-                    InputManager.INSTANCE.forward(false);
-                    rowsCompleted++;
-                    
-                    if (rowsCompleted >= ModConfig.INSTANCE.columnCount) {
-                        MacroManager.INSTANCE.startReturnToStart();
-                        return;
-                    }
-
-                    state = State.ROW_DELAY;
-                    targetDelay = ModConfig.INSTANCE.rowDelayMin + 
-                        (long) (Math.random() * (ModConfig.INSTANCE.rowDelayMax - ModConfig.INSTANCE.rowDelayMin));
-                    delayTimer.reset();
-                }
+                checkRowSwitch(client);
                 break;
 
             case ROW_DELAY:
@@ -90,14 +84,29 @@ public class WheatCarrotPotatoPattern extends FarmingPattern {
         }
     }
 
-    private boolean isAtRowEnd(MinecraftClient client) {
-        if (ModConfig.INSTANCE.detectionMode == ModConfig.DetectionMode.AIR_BLOCK) {
-            Direction dir = (state == State.LEFT) ? client.player.getHorizontalFacing().rotateYCounterclockwise() 
-                                                 : client.player.getHorizontalFacing().rotateYClockwise();
-            BlockPos pos = client.player.getBlockPos().offset(dir);
-            return client.world != null && client.world.getBlockState(pos).isAir();
-        } else {
-            return client.player.horizontalCollision;
+    private void checkRowSwitch(MinecraftClient client) {
+        // Fall Detection
+        if (client.player.getY() < lastY - 0.5) {
+            lastY = client.player.getY();
+            rowsCompleted++;
+            
+            if (rowsCompleted >= ModConfig.INSTANCE.rowCount) {
+                MacroManager.INSTANCE.startReturnToStart("All rows completed (Wheat)");
+                return;
+            }
+
+            state = State.ROW_DELAY;
+            targetDelay = ModConfig.INSTANCE.rowDelayMin + 
+                (long) (Math.random() * (ModConfig.INSTANCE.rowDelayMax - ModConfig.INSTANCE.rowDelayMin));
+            delayTimer.reset();
+            InputManager.INSTANCE.clear();
+            return;
         }
+    }
+
+    private boolean isAir(MinecraftClient client, Direction dir) {
+        if (client.world == null || client.player == null) return false;
+        BlockPos pos = client.player.getBlockPos().offset(dir);
+        return client.world.getBlockState(pos).isAir();
     }
 }

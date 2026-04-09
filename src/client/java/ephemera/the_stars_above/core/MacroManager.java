@@ -37,7 +37,7 @@ public class MacroManager {
         setState(MacroState.RUNNING);
         
         currentPattern = PatternFactory.create(ModConfig.INSTANCE.farmingPattern);
-        currentPattern.syncConfig(ModConfig.INSTANCE.rowLength, ModConfig.INSTANCE.columnCount);
+        currentPattern.syncConfig(ModConfig.INSTANCE.rowCount);
         currentPattern.start();
         
         stuckDetector.setEnabled(true);
@@ -101,14 +101,19 @@ public class MacroManager {
         }
     }
 
-    public void startReturnToStart() {
+    public void startReturnToStart(String reason) {
         if (state != MacroState.RUNNING) return;
         setState(MacroState.RETURN_TO_START);
         if (currentPattern != null) {
             currentPattern.stop();
         }
         InputManager.INSTANCE.clear();
-        ChatUtils.sendMessage("Farming completed. Returning to start...");
+        
+        if (ModConfig.INSTANCE.enableDebugMode) {
+            ChatUtils.sendMessage("Returning to start: " + reason);
+        } else {
+            ChatUtils.sendMessage("Farming completed. Returning to start...");
+        }
     }
 
     private void handleReturnToStart() {
@@ -118,7 +123,7 @@ public class MacroManager {
                     net.minecraft.client.MinecraftClient.getInstance().player.networkHandler.sendChatCommand("warp garden");
                 }
             });
-            stop("Warping to garden.");
+            stop("Warping...");
         } else {
             boolean reached = Pathfinder.INSTANCE.moveToward(
                 ModConfig.INSTANCE.startX,

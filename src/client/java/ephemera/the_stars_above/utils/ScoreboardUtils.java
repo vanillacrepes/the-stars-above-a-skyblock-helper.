@@ -64,6 +64,6 @@ public class ScoreboardUtils {
      */
     public static String cleanColorCodes(String input) {
         if (input == null) return "";
-        return input.replaceAll("(?i)§[0-9A-FK-OR]", "");
+        return input.replaceAll("(?i)\\u00A7.", "");
     }
 }

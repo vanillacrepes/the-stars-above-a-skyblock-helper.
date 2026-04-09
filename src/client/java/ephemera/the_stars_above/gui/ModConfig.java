@@ -18,7 +18,7 @@ public class ModConfig {
 
     public enum DetectionMode {
         AIR_BLOCK,
-        DISTANCE
+        COLLISION
     }
 
     public enum ReturnMode {
@@ -28,12 +28,12 @@ public class ModConfig {
 
     // General
     public boolean enableMacroToggle = true;
-    public PatternFactory.PatternType farmingPattern = PatternFactory.PatternType.STRAIGHT_LINE;
-    public int rowLength = 50;
-    public int columnCount = 5;
+    public PatternFactory.PatternType farmingPattern = PatternFactory.PatternType.MELON_PUMPKIN;
+    public int rowCount = 5;
+    public boolean enableDebugMode = false;
 
     // Farming Settings
-    public DetectionMode detectionMode = DetectionMode.DISTANCE;
+    public DetectionMode detectionMode = DetectionMode.COLLISION;
     public int rowDelayMin = 100;
     public int rowDelayMax = 300;
 
@@ -74,6 +74,13 @@ public class ModConfig {
         }
         try (FileReader reader = new FileReader(CONFIG_FILE)) {
             INSTANCE = GSON.fromJson(reader, ModConfig.class);
+            if (INSTANCE == null) {
+                INSTANCE = new ModConfig();
+            }
+            // Validate enum fields to prevent NPEs if the config file has old/invalid values
+            if (INSTANCE.farmingPattern == null) INSTANCE.farmingPattern = PatternFactory.PatternType.MELON_PUMPKIN;
+            if (INSTANCE.detectionMode == null) INSTANCE.detectionMode = DetectionMode.COLLISION;
+            if (INSTANCE.returnMode == null) INSTANCE.returnMode = ReturnMode.COMMAND;
         } catch (IOException e) {
             e.printStackTrace();
         }

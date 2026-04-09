@@ -19,6 +19,10 @@ public class MushroomPattern extends FarmingPattern {
     private long targetDelay = 0;
 
     @Override
+    public void syncConfig(int rowCount) {
+    }
+
+    @Override
     public void start() {
         state = State.LEFT;
         InputManager.INSTANCE.clear();
@@ -69,8 +73,8 @@ public class MushroomPattern extends FarmingPattern {
                     }
                     rowsCompleted++;
                     
-                    if (rowsCompleted >= ModConfig.INSTANCE.columnCount) {
-                        MacroManager.INSTANCE.startReturnToStart();
+                    if (rowsCompleted >= ModConfig.INSTANCE.rowCount) {
+                        MacroManager.INSTANCE.startReturnToStart("All rows completed (Mushroom)");
                         return;
                     }
 

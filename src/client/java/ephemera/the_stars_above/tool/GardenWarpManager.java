@@ -16,6 +16,7 @@ public class GardenWarpManager {
         
         if (!PlayerStateDetector.isOnGarden()) {
             if (warpTimer.hasPassed(5000)) { 
+                ChatUtils.sendMessage("Detected player outside of Garden. Warping back...");
                 ChatUtils.sendCommand("warp garden");
                 warpTimer.reset();
             }

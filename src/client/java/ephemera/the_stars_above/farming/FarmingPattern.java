@@ -19,7 +19,7 @@ public abstract class FarmingPattern {
     /**
      * Sync configuration values to this pattern instance.
      */
-    public void syncConfig(int rowLength, int cols) {
+    public void syncConfig(int rowCount) {
         // default no-op
     }
 }
