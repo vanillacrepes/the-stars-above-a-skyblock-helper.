@@ -1,0 +1,92 @@
+package ephemera.the_stars_above.gui;
+
+import dev.isxander.yacl3.api.*;
+import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
+import dev.isxander.yacl3.api.controller.EnumControllerBuilder;
+import dev.isxander.yacl3.api.controller.FloatSliderControllerBuilder;
+import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder;
+import ephemera.the_stars_above.farming.PatternFactory;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.text.Text;
+
+public class ConfigScreen {
+
+    public static Screen create(Screen parent) {
+        return YetAnotherConfigLib.createBuilder()
+                .title(Text.literal("The Stars Above Configuration"))
+                .category(ConfigCategory.createBuilder()
+                        .name(Text.literal("General"))
+                        .tooltip(Text.literal("General macro settings"))
+                        .group(OptionGroup.createBuilder()
+                                .name(Text.literal("Pattern Options"))
+                                .option(Option.<PatternFactory.PatternType>createBuilder()
+                                        .name(Text.literal("Farming Pattern"))
+                                        .binding(PatternFactory.PatternType.STRAIGHT_LINE, 
+                                                () -> ModConfig.INSTANCE.farmingPattern, 
+                                                val -> ModConfig.INSTANCE.farmingPattern = val)
+                                        .controller(opt -> EnumControllerBuilder.create(opt).enumClass(PatternFactory.PatternType.class))
+                                        .build())
+                                .option(Option.<Integer>createBuilder()
+                                        .name(Text.literal("Row Length"))
+                                        .binding(50, () -> ModConfig.INSTANCE.rowLength, val -> ModConfig.INSTANCE.rowLength = val)
+                                        .controller(opt -> IntegerSliderControllerBuilder.create(opt).range(10, 100).step(1))
+                                        .build())
+                                .option(Option.<Integer>createBuilder()
+                                        .name(Text.literal("Column Count"))
+                                        .binding(5, () -> ModConfig.INSTANCE.columnCount, val -> ModConfig.INSTANCE.columnCount = val)
+                                        .controller(opt -> IntegerSliderControllerBuilder.create(opt).range(1, 20).step(1))
+                                        .build())
+                                .build())
+                        .build())
+                .category(ConfigCategory.createBuilder()
+                        .name(Text.literal("Safety"))
+                        .group(OptionGroup.createBuilder()
+                                .name(Text.literal("Failsafes"))
+                                .option(Option.<Boolean>createBuilder()
+                                        .name(Text.literal("Enable Stuck Detection"))
+                                        .binding(true, () -> ModConfig.INSTANCE.enableStuckDetection, val -> ModConfig.INSTANCE.enableStuckDetection = val)
+                                        .controller(opt -> BooleanControllerBuilder.create(opt).yesNoFormatter())
+                                        .build())
+                                .option(Option.<Integer>createBuilder()
+                                        .name(Text.literal("Stuck Threshold (Seconds)"))
+                                        .binding(3, () -> ModConfig.INSTANCE.stuckThresholdSeconds, val -> ModConfig.INSTANCE.stuckThresholdSeconds = val)
+                                        .controller(opt -> IntegerSliderControllerBuilder.create(opt).range(1, 10).step(1))
+                                        .build())
+                                .option(Option.<Boolean>createBuilder()
+                                        .name(Text.literal("Auto Warp to Garden"))
+                                        .binding(true, () -> ModConfig.INSTANCE.enableAutoWarp, val -> ModConfig.INSTANCE.enableAutoWarp = val)
+                                        .controller(opt -> BooleanControllerBuilder.create(opt).yesNoFormatter())
+                                        .build())
+                                .option(Option.<Boolean>createBuilder()
+                                        .name(Text.literal("Stop on Damage"))
+                                        .binding(true, () -> ModConfig.INSTANCE.failsafeDamage, val -> ModConfig.INSTANCE.failsafeDamage = val)
+                                        .controller(opt -> BooleanControllerBuilder.create(opt).yesNoFormatter())
+                                        .build())
+                                .build())
+                        .build())
+                .category(ConfigCategory.createBuilder()
+                        .name(Text.literal("Tools & Rotation"))
+                        .group(OptionGroup.createBuilder()
+                                .name(Text.literal("Automation"))
+                                .option(Option.<Boolean>createBuilder()
+                                        .name(Text.literal("Auto Tool Swap"))
+                                        .binding(true, () -> ModConfig.INSTANCE.enableAutoToolSwap, val -> ModConfig.INSTANCE.enableAutoToolSwap = val)
+                                        .controller(opt -> BooleanControllerBuilder.create(opt).yesNoFormatter())
+                                        .build())
+                                .option(Option.<Float>createBuilder()
+                                        .name(Text.literal("Rotation Smoothing"))
+                                        .binding(0.5f, () -> ModConfig.INSTANCE.rotationSmoothingSpeed, val -> ModConfig.INSTANCE.rotationSmoothingSpeed = val)
+                                        .controller(opt -> FloatSliderControllerBuilder.create(opt).range(0.1f, 1.0f).step(0.05f))
+                                        .build())
+                                .option(Option.<Boolean>createBuilder()
+                                        .name(Text.literal("Randomize Rotation"))
+                                        .binding(true, () -> ModConfig.INSTANCE.randomizeRotation, val -> ModConfig.INSTANCE.randomizeRotation = val)
+                                        .controller(opt -> BooleanControllerBuilder.create(opt).yesNoFormatter())
+                                        .build())
+                                .build())
+                        .build())
+                .save(() -> ModConfig.INSTANCE.save())
+                .build()
+                .generateScreen(parent);
+    }
+}

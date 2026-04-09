@@ -1,0 +1,33 @@
+{
+	"schemaVersion": 1,
+	"id": "the-stars-above",
+	"version": "${version}",
+	"name": "The Stars Above",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/the-stars-above/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+			"ephemera.the_stars_above.core.TheStarsAboveMod"
+		],
+		"modmenu": [
+			"ephemera.the_stars_above.gui.ModMenuIntegration"
+		]
+	},
+	"mixins": [],
+	"depends": {
+		"fabricloader": ">=0.18.6",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*",
+		"fabric-language-kotlin": "*"
+	}
+}
