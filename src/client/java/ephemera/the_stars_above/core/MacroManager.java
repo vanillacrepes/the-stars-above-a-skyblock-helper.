@@ -3,7 +3,9 @@ package ephemera.the_stars_above.core;
 import ephemera.the_stars_above.events.MacroStateChangeEvent;
 import ephemera.the_stars_above.farming.FarmingPattern;
 import ephemera.the_stars_above.farming.PatternFactory;
-import ephemera.the_stars_above.movement.MovementController;
+import ephemera.the_stars_above.gui.ModConfig;
+import ephemera.the_stars_above.movement.InputManager;
+import ephemera.the_stars_above.movement.Pathfinder;
 import ephemera.the_stars_above.movement.StuckDetector;
 import ephemera.the_stars_above.tool.GardenWarpManager;
 import ephemera.the_stars_above.tool.ToolManager;
@@ -34,7 +36,8 @@ public class MacroManager {
         if (state == MacroState.RUNNING) return;
         setState(MacroState.RUNNING);
         
-        currentPattern = PatternFactory.create(PatternFactory.PatternType.STRAIGHT_LINE);
+        currentPattern = PatternFactory.create(ModConfig.INSTANCE.farmingPattern);
+        currentPattern.syncConfig(ModConfig.INSTANCE.rowLength, ModConfig.INSTANCE.columnCount);
         currentPattern.start();
         
         stuckDetector.setEnabled(true);
@@ -51,7 +54,7 @@ public class MacroManager {
         if (currentPattern != null) {
             currentPattern.stop();
         }
-        MovementController.stopAll();
+        InputManager.INSTANCE.clear();
         ChatUtils.sendMessage("Macro stopped: " + reason);
     }
     
@@ -82,15 +85,49 @@ public class MacroManager {
     }
 
     private void onTick() {
-        if (state != MacroState.RUNNING) return;
+        if (state == MacroState.IDLE || state == MacroState.PAUSED) return;
         
         rotationHandler.update();
         toolManager.update();
         warpManager.update();
         stuckDetector.update();
         
-        if (currentPattern != null && !rotationHandler.isRotating()) {
-            currentPattern.onTick();
+        if (state == MacroState.RUNNING) {
+            if (currentPattern != null && !rotationHandler.isRotating()) {
+                currentPattern.onTick();
+            }
+        } else if (state == MacroState.RETURN_TO_START) {
+            handleReturnToStart();
+        }
+    }
+
+    public void startReturnToStart() {
+        if (state != MacroState.RUNNING) return;
+        setState(MacroState.RETURN_TO_START);
+        if (currentPattern != null) {
+            currentPattern.stop();
+        }
+        InputManager.INSTANCE.clear();
+        ChatUtils.sendMessage("Farming completed. Returning to start...");
+    }
+
+    private void handleReturnToStart() {
+        if (ModConfig.INSTANCE.returnMode == ModConfig.ReturnMode.COMMAND) {
+            net.minecraft.client.MinecraftClient.getInstance().execute(() -> {
+                if (net.minecraft.client.MinecraftClient.getInstance().player != null) {
+                    net.minecraft.client.MinecraftClient.getInstance().player.networkHandler.sendChatCommand("warp garden");
+                }
+            });
+            stop("Warping to garden.");
+        } else {
+            boolean reached = Pathfinder.INSTANCE.moveToward(
+                ModConfig.INSTANCE.startX,
+                ModConfig.INSTANCE.startY,
+                ModConfig.INSTANCE.startZ
+            );
+            if (reached) {
+                stop("Reached start position.");
+            }
         }
     }
     

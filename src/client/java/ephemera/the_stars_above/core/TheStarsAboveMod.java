@@ -9,8 +9,9 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.option.KeyBinding.Category;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 
@@ -29,14 +30,14 @@ public class TheStarsAboveMod implements ClientModInitializer {
         toggleKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.thestarsabove.toggle", 
                 InputUtil.Type.KEYSYM, 
-                GLFW.GLFW_KEY_F, 
+                GLFW.GLFW_KEY_GRAVE_ACCENT, 
                 KeyBinding.Category.MISC
         ));
         
         configKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.thestarsabove.config", 
                 InputUtil.Type.KEYSYM, 
-                GLFW.GLFW_KEY_G, 
+                GLFW.GLFW_KEY_EQUAL, 
                 KeyBinding.Category.MISC
         ));
 
@@ -81,6 +82,21 @@ public class TheStarsAboveMod implements ClientModInitializer {
         StuckEvent.EVENT.register(() -> {
             ChatUtils.sendWarning("Stuck detected! Pausing macro.");
             MacroManager.INSTANCE.pause();
+        });
+
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+            dispatcher.register(ClientCommandManager.literal("setfarmstart").executes(context -> {
+                if (context.getSource().getClient().player != null) {
+                    var player = context.getSource().getClient().player;
+                    ModConfig.INSTANCE.startX = player.getX();
+                    ModConfig.INSTANCE.startY = player.getY();
+                    ModConfig.INSTANCE.startZ = player.getZ();
+                    ModConfig.INSTANCE.save();
+                    ChatUtils.sendMessage("Farm start position set to: " + 
+                        String.format("%.2f, %.2f, %.2f", ModConfig.INSTANCE.startX, ModConfig.INSTANCE.startY, ModConfig.INSTANCE.startZ));
+                }
+                return 1;
+            }));
         });
     }
 }

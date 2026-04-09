@@ -4,5 +4,6 @@ public enum MacroState {
     IDLE, 
     RUNNING, 
     PAUSED, 
-    STOPPING
+    STOPPING,
+    RETURN_TO_START
 }

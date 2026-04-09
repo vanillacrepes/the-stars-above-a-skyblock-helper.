@@ -16,11 +16,32 @@ public class ModConfig {
 
     public static ModConfig INSTANCE = new ModConfig();
 
+    public enum DetectionMode {
+        AIR_BLOCK,
+        DISTANCE
+    }
+
+    public enum ReturnMode {
+        COMMAND,
+        PATHFIND
+    }
+
     // General
     public boolean enableMacroToggle = true;
     public PatternFactory.PatternType farmingPattern = PatternFactory.PatternType.STRAIGHT_LINE;
     public int rowLength = 50;
     public int columnCount = 5;
+
+    // Farming Settings
+    public DetectionMode detectionMode = DetectionMode.DISTANCE;
+    public int rowDelayMin = 100;
+    public int rowDelayMax = 300;
+
+    // Return to Start
+    public ReturnMode returnMode = ReturnMode.COMMAND;
+    public double startX = 0;
+    public double startY = 0;
+    public double startZ = 0;
 
     // Safety
     public boolean enableStuckDetection = true;
@@ -34,6 +55,9 @@ public class ModConfig {
     // Rotation
     public float rotationSmoothingSpeed = 0.5f;
     public boolean randomizeRotation = true;
+
+    // Movement
+    public float movementThreshold = 0.5f;
 
     public void save() {
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
