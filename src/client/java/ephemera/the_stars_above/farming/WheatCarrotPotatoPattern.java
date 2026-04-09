@@ -85,9 +85,21 @@ public class WheatCarrotPotatoPattern extends FarmingPattern {
     }
 
     private void checkRowSwitch(MinecraftClient client) {
+        double currentY = client.player.getY();
+        
+        // Debug logging for Y changes
+        if (ephemera.the_stars_above.gui.ModConfig.INSTANCE.enableDebugMode) {
+            if (Math.abs(currentY - lastY) > 0.1) {
+                ephemera.the_stars_above.utils.DebugLogger.log(
+                    String.format("Y Change: Last=%.3f, Current=%.3f, Delta=%.3f", lastY, currentY, lastY - currentY)
+                );
+            }
+        }
+
         // Fall Detection
-        if (client.player.getY() < lastY - 0.5) {
-            lastY = client.player.getY();
+        if (currentY < lastY - 0.3) {
+            ephemera.the_stars_above.utils.DebugLogger.log("Fall detected! Switching rows.");
+            lastY = currentY;
             rowsCompleted++;
             
             if (rowsCompleted >= ModConfig.INSTANCE.rowCount) {
